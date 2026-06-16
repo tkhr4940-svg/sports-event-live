@@ -1,10 +1,11 @@
-import { auth, db, googleProvider } from "./firebase.js?v=11";
+import { auth, db, googleProvider } from "./firebase.js?v=30";
 
 import {
-  signInWithRedirect,
-  getRedirectResult,
+  signInWithPopup,
   signOut,
-  onAuthStateChanged
+  onAuthStateChanged,
+  setPersistence,
+  browserLocalPersistence
 } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
 
 import {
@@ -17,25 +18,38 @@ const logoutBtn = document.getElementById("logout-btn");
 const statusEl = document.getElementById("login-status");
 const uidEl = document.getElementById("uid");
 
+function showError(prefix, error) {
+  console.error(error);
+  statusEl.textContent =
+    prefix + "：" + (error.code || "no-code") + " / " + error.message;
+}
+
+setPersistence(auth, browserLocalPersistence).catch((error) => {
+  showError("ログイン保持設定に失敗しました", error);
+});
+
 loginBtn.addEventListener("click", async () => {
   try {
-    statusEl.textContent = "Googleログイン画面へ移動します...";
-    await signInWithRedirect(auth, googleProvider);
+    loginBtn.disabled = true;
+    statusEl.textContent = "Googleログイン中...";
+
+    await setPersistence(auth, browserLocalPersistence);
+    await signInWithPopup(auth, googleProvider);
+
+    statusEl.textContent = "ログイン確認中...";
   } catch (error) {
-    console.error(error);
-    statusEl.textContent =
-      "ログイン開始に失敗しました：" + error.code + " / " + error.message;
+    showError("ログインに失敗しました", error);
+  } finally {
+    loginBtn.disabled = false;
   }
 });
 
 logoutBtn.addEventListener("click", async () => {
-  await signOut(auth);
-});
-
-getRedirectResult(auth).catch((error) => {
-  console.error(error);
-  statusEl.textContent =
-    "ログイン処理に失敗しました：" + error.code + " / " + error.message;
+  try {
+    await signOut(auth);
+  } catch (error) {
+    showError("ログアウトに失敗しました", error);
+  }
 });
 
 onAuthStateChanged(auth, async (user) => {
@@ -49,7 +63,9 @@ onAuthStateChanged(auth, async (user) => {
 
   loginBtn.hidden = true;
   logoutBtn.hidden = false;
+
   uidEl.textContent = user.uid;
+  statusEl.textContent = "ログイン済みです。管理者確認中...";
 
   try {
     const adminRef = doc(db, "admins", user.uid);
@@ -62,8 +78,6 @@ onAuthStateChanged(auth, async (user) => {
         "ログインはできていますが、まだ管理者登録されていません。下のUIDをFirebaseのadminsに登録してください。";
     }
   } catch (error) {
-    console.error(error);
-    statusEl.textContent =
-      "管理者確認に失敗しました：" + error.code + " / " + error.message;
+    showError("管理者確認に失敗しました", error);
   }
 });
