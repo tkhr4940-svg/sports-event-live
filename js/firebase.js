@@ -4,7 +4,7 @@ import { getAuth, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/
 
 const firebaseConfig = {
   apiKey: "あなたのapiKey",
-  authDomain: "sports-event-live.authDomain",
+  authDomain: "sports-event-live.firebaseapp.com",
   projectId: "あなたのprojectId",
   storageBucket: "あなたのstorageBucket",
   messagingSenderId: "あなたのmessagingSenderId",
