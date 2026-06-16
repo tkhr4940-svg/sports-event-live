@@ -1,4 +1,4 @@
-import { auth, db, googleProvider } from "./firebase.js";
+import { auth, db, googleProvider } from "./firebase.js?v=11";
 
 import {
   signInWithRedirect,
