@@ -23,7 +23,8 @@ loginBtn.addEventListener("click", async () => {
     await signInWithRedirect(auth, googleProvider);
   } catch (error) {
     console.error(error);
-    statusEl.textContent = "ログイン開始に失敗しました：" + error.code + " / " + error.message;
+    statusEl.textContent =
+      "ログイン開始に失敗しました：" + error.code + " / " + error.message;
   }
 });
 
@@ -33,7 +34,8 @@ logoutBtn.addEventListener("click", async () => {
 
 getRedirectResult(auth).catch((error) => {
   console.error(error);
-  statusEl.textContent = "ログイン処理に失敗しました：" + error.code + " / " + error.message;
+  statusEl.textContent =
+    "ログイン処理に失敗しました：" + error.code + " / " + error.message;
 });
 
 onAuthStateChanged(auth, async (user) => {
