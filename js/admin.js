@@ -1,7 +1,8 @@
 import { auth, db, googleProvider } from "./firebase.js";
 
 import {
-  signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   signOut,
   onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
@@ -18,15 +19,21 @@ const uidEl = document.getElementById("uid");
 
 loginBtn.addEventListener("click", async () => {
   try {
-    await signInWithPopup(auth, googleProvider);
+    statusEl.textContent = "Googleログイン画面へ移動します...";
+    await signInWithRedirect(auth, googleProvider);
   } catch (error) {
     console.error(error);
-    statusEl.textContent = "ログインに失敗しました：" + error.message;
+    statusEl.textContent = "ログイン開始に失敗しました：" + error.code + " / " + error.message;
   }
 });
 
 logoutBtn.addEventListener("click", async () => {
   await signOut(auth);
+});
+
+getRedirectResult(auth).catch((error) => {
+  console.error(error);
+  statusEl.textContent = "ログイン処理に失敗しました：" + error.code + " / " + error.message;
 });
 
 onAuthStateChanged(auth, async (user) => {
@@ -40,7 +47,6 @@ onAuthStateChanged(auth, async (user) => {
 
   loginBtn.hidden = true;
   logoutBtn.hidden = false;
-
   uidEl.textContent = user.uid;
 
   try {
@@ -55,6 +61,7 @@ onAuthStateChanged(auth, async (user) => {
     }
   } catch (error) {
     console.error(error);
-    statusEl.textContent = "管理者確認に失敗しました：" + error.message;
+    statusEl.textContent =
+      "管理者確認に失敗しました：" + error.code + " / " + error.message;
   }
 });
