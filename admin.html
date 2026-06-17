@@ -30,7 +30,7 @@
       <nav class="admin-menu">
         <button class="menu-button active" type="button" data-view="teams">1. チーム管理</button>
         <button class="menu-button" type="button" data-view="create-stage">2. 表の作成</button>
-        <button class="menu-button" type="button" disabled>3. リーグ戦編集</button>
+        <button class="menu-button" type="button" data-view="league-edit">3. リーグ戦編集</button>
         <button class="menu-button" type="button" disabled>4. トーナメント編集</button>
         <button class="menu-button" type="button" disabled>5. 順位入力型編集</button>
         <button class="menu-button" type="button" disabled>6. 公開／非公開管理</button>
@@ -155,6 +155,77 @@
           </table>
         </div>
       </section>
+      <section id="view-league-edit" class="admin-view card" hidden>
+  <h2>リーグ戦編集</h2>
+
+  <label class="form-field">
+    <span>編集するリーグ戦表</span>
+    <select id="league-stage-select">
+      <option value="">リーグ戦表を読み込み中...</option>
+    </select>
+  </label>
+
+  <div id="league-info" class="info-box"></div>
+
+  <p id="league-message" class="message"></p>
+
+  <h3>試合結果入力</h3>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>No</th>
+          <th>対戦</th>
+          <th>得点A</th>
+          <th>得点B</th>
+          <th>状態</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody id="league-matches-tbody">
+        <tr>
+          <td colspan="6">リーグ戦表を選択してください。</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>順位表</h3>
+
+  <p id="league-tie-note" class="help-text"></p>
+
+  <div class="stage-actions">
+    <button id="league-save-manual-ranks-btn" type="button">
+      手動順位を保存
+    </button>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>順位</th>
+          <th>チーム</th>
+          <th>試合</th>
+          <th>勝</th>
+          <th>分</th>
+          <th>負</th>
+          <th>得点</th>
+          <th>失点</th>
+          <th>得失点差</th>
+          <th>勝点</th>
+          <th>手動順位</th>
+        </tr>
+      </thead>
+      <tbody id="league-standings-tbody">
+        <tr>
+          <td colspan="11">リーグ戦表を選択してください。</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
     </section>
   </main>
 
