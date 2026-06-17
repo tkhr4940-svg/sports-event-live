@@ -168,3 +168,48 @@ pre {
     width: fit-content;
   }
 }
+.info-box {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 10px;
+  margin: 12px 0;
+}
+
+.info-box p {
+  margin: 4px 0;
+}
+
+.score-input {
+  width: 70px;
+  padding: 6px;
+  font-size: 15px;
+}
+
+.rank-input {
+  width: 70px;
+  padding: 6px;
+  font-size: 15px;
+}
+
+.small-select {
+  min-width: 100px;
+  padding: 6px;
+  font-size: 14px;
+}
+
+#league-standings-tbody td,
+#league-matches-tbody td {
+  vertical-align: middle;
+}
+
+@media (max-width: 700px) {
+  .score-input,
+  .rank-input {
+    width: 64px;
+  }
+
+  .small-select {
+    min-width: 90px;
+  }
+}
