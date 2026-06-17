@@ -1,0 +1,170 @@
+[hidden] {
+  display: none !important;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: #f5f5f5;
+  color: #222;
+}
+
+.site-header {
+  background: #1f2937;
+  color: #fff;
+  padding: 16px;
+}
+
+.site-header h1 {
+  margin: 0;
+  font-size: 22px;
+}
+
+.container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+.card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.admin-menu {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.menu-button {
+  padding: 8px 12px;
+}
+
+.menu-button.active {
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+}
+
+.form-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+input[type="text"] {
+  padding: 8px;
+  font-size: 16px;
+}
+
+#team-name-input {
+  min-width: 240px;
+}
+
+button {
+  cursor: pointer;
+  padding: 8px 10px;
+  font-size: 14px;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+}
+
+th,
+td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+}
+
+th {
+  background: #f0f0f0;
+}
+
+.team-name-edit {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.actions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.badge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+}
+
+.badge-active {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.badge-muted {
+  background: #e5e7eb;
+  color: #555;
+}
+
+.is-hidden-row {
+  opacity: 0.6;
+  background: #fafafa;
+}
+
+.message {
+  min-height: 1.5em;
+}
+
+.message.success {
+  color: #166534;
+}
+
+.message.error {
+  color: #b91c1c;
+  font-weight: bold;
+}
+
+pre {
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+@media (max-width: 600px) {
+  .container {
+    padding: 8px;
+  }
+
+  .card {
+    padding: 12px;
+  }
+
+  .actions {
+    flex-direction: column;
+  }
+
+  button {
+    width: fit-content;
+  }
+}
