@@ -3,18 +3,76 @@
 <head>
   <meta charset="UTF-8">
   <title>管理画面</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="./style.css?v=40">
 </head>
 <body>
-  <h1>管理画面</h1>
+  <header class="site-header">
+    <h1>大会管理画面</h1>
+  </header>
 
-  <button id="login-btn">Googleでログイン</button>
-  <button id="logout-btn" hidden>ログアウト</button>
+  <main class="container">
+    <section class="card">
+      <h2>ログイン</h2>
 
-  <p id="login-status">確認中...</p>
+      <button id="login-btn">Googleでログイン</button>
+      <button id="logout-btn" hidden>ログアウト</button>
 
-  <h2>あなたのUID</h2>
-  <pre id="uid"></pre>
+      <p id="login-status">確認中...</p>
 
-  <script type="module" src="./js/admin.js?v=30"></script>
+      <details>
+        <summary>UIDを表示</summary>
+        <pre id="uid"></pre>
+      </details>
+    </section>
+
+    <section id="admin-area" hidden>
+      <nav class="admin-menu">
+        <button class="menu-button active">1. チーム管理</button>
+        <button class="menu-button" disabled>2. 表の作成</button>
+        <button class="menu-button" disabled>3. リーグ戦編集</button>
+        <button class="menu-button" disabled>4. トーナメント編集</button>
+        <button class="menu-button" disabled>5. 順位入力型編集</button>
+        <button class="menu-button" disabled>6. 公開／非公開管理</button>
+      </nav>
+
+      <section class="card">
+        <h2>チーム管理</h2>
+
+        <form id="add-team-form" class="form-row">
+          <input
+            id="team-name-input"
+            type="text"
+            placeholder="例：赤チーム"
+            autocomplete="off"
+          >
+          <button id="add-team-btn" type="submit">チーム追加</button>
+        </form>
+
+        <p id="team-message" class="message"></p>
+        <p id="team-count"></p>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>順番</th>
+                <th>チーム名</th>
+                <th>状態</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody id="teams-tbody">
+              <tr>
+                <td colspan="4">読み込み中...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <script type="module" src="./js/admin.js?v=40"></script>
 </body>
 </html>
