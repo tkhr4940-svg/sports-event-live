@@ -31,7 +31,7 @@
         <button class="menu-button active" type="button" data-view="teams">1. チーム管理</button>
         <button class="menu-button" type="button" data-view="create-stage">2. 表の作成</button>
         <button class="menu-button" type="button" data-view="league-edit">3. リーグ戦編集</button>
-        <button class="menu-button" type="button" disabled>4. トーナメント編集</button>
+        <button class="menu-button" type="button" data-view="tournament-edit">4. トーナメント編集</button>
         <button class="menu-button" type="button" disabled>5. 順位入力型編集</button>
         <button class="menu-button" type="button" disabled>6. 公開／非公開管理</button>
       </nav>
@@ -226,10 +226,53 @@
     </table>
   </div>
 </section>
+      <section id="view-tournament-edit" class="admin-view card" hidden>
+  <h2>トーナメント編集</h2>
+
+  <label class="form-field">
+    <span>編集するトーナメント表</span>
+    <select id="tournament-stage-select">
+      <option value="">トーナメント表を読み込み中...</option>
+    </select>
+  </label>
+
+  <div id="tournament-info" class="info-box"></div>
+
+  <p id="tournament-message" class="message"></p>
+
+  <h3>組み合わせ枠</h3>
+  <p class="help-text">
+    各枠にチームを配置してください。空き枠は不戦勝扱いにできます。
+    参加チームは必ず1回ずつ配置してください。
+  </p>
+
+  <div id="tournament-seed-slots" class="seed-grid">
+    トーナメント表を選択してください。
+  </div>
+
+  <div class="stage-actions">
+    <button id="tournament-save-seeds-btn" type="button">
+      組み合わせを保存
+    </button>
+
+    <button id="tournament-build-matches-btn" type="button">
+      組み合わせを保存して試合を作成／再作成
+    </button>
+  </div>
+
+  <hr>
+
+  <h3>試合結果入力</h3>
+
+  <div id="tournament-matches">
+    トーナメント表を選択してください。
+  </div>
+</section>
     </section>
   </main>
 
   <script type="module" src="./js/admin.js?v=50"></script>
   <script type="module" src="./js/admin-league.js?v=60"></script>
+  <script type="module" src="./js/admin-tournament.js?v=70"></script>
 </body>
 </html>
