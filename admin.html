@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <title>管理画面</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="./style.css?v=40">
+  <link rel="stylesheet" href="./style.css?v=50">
 </head>
 <body>
   <header class="site-header">
@@ -28,15 +28,15 @@
 
     <section id="admin-area" hidden>
       <nav class="admin-menu">
-        <button class="menu-button active">1. チーム管理</button>
-        <button class="menu-button" disabled>2. 表の作成</button>
-        <button class="menu-button" disabled>3. リーグ戦編集</button>
-        <button class="menu-button" disabled>4. トーナメント編集</button>
-        <button class="menu-button" disabled>5. 順位入力型編集</button>
-        <button class="menu-button" disabled>6. 公開／非公開管理</button>
+        <button class="menu-button active" type="button" data-view="teams">1. チーム管理</button>
+        <button class="menu-button" type="button" data-view="create-stage">2. 表の作成</button>
+        <button class="menu-button" type="button" disabled>3. リーグ戦編集</button>
+        <button class="menu-button" type="button" disabled>4. トーナメント編集</button>
+        <button class="menu-button" type="button" disabled>5. 順位入力型編集</button>
+        <button class="menu-button" type="button" disabled>6. 公開／非公開管理</button>
       </nav>
 
-      <section class="card">
+      <section id="view-teams" class="admin-view card">
         <h2>チーム管理</h2>
 
         <form id="add-team-form" class="form-row">
@@ -70,9 +70,94 @@
           </table>
         </div>
       </section>
+
+      <section id="view-create-stage" class="admin-view card" hidden>
+        <h2>表の作成</h2>
+
+        <form id="create-stage-form">
+          <div class="form-grid">
+            <label class="form-field">
+              <span>競技</span>
+              <select id="stage-sport-select">
+                <option value="">読み込み中...</option>
+              </select>
+            </label>
+
+            <label class="form-field">
+              <span>表の種類</span>
+              <select id="stage-type-select">
+                <option value="league">リーグ戦</option>
+                <option value="tournament">トーナメント</option>
+                <option value="ranking">順位入力型</option>
+              </select>
+            </label>
+
+            <label class="form-field">
+              <span>表の名前</span>
+              <input
+                id="stage-name-input"
+                type="text"
+                placeholder="例：バレーボール予選Aリーグ"
+                autocomplete="off"
+              >
+            </label>
+
+            <label class="form-field">
+              <span>公開状態</span>
+              <select id="stage-visibility-select">
+                <option value="private" selected>非公開</option>
+                <option value="public">公開</option>
+              </select>
+            </label>
+          </div>
+
+          <h3>参加チーム</h3>
+
+          <div class="stage-actions">
+            <button id="select-all-teams-btn" type="button">表示中チームを全選択</button>
+            <button id="clear-stage-teams-btn" type="button">選択解除</button>
+          </div>
+
+          <div id="stage-team-selection" class="checkbox-list">
+            チームを読み込み中...
+          </div>
+
+          <p id="stage-rule-help" class="help-text"></p>
+          <p id="stage-message" class="message"></p>
+
+          <div class="stage-submit-row">
+            <button id="create-stage-btn" type="submit">表を作成</button>
+          </div>
+        </form>
+
+        <hr>
+
+        <h3>作成済みの表</h3>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>順番</th>
+                <th>表の名前</th>
+                <th>競技</th>
+                <th>種類</th>
+                <th>参加数</th>
+                <th>公開状態</th>
+                <th>状態</th>
+              </tr>
+            </thead>
+            <tbody id="stages-tbody">
+              <tr>
+                <td colspan="7">読み込み中...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
     </section>
   </main>
 
-  <script type="module" src="./js/admin.js?v=40"></script>
+  <script type="module" src="./js/admin.js?v=50"></script>
 </body>
 </html>
