@@ -297,3 +297,74 @@ pre {
 #publish-stages-tbody td {
   vertical-align: middle;
 }
+.viewer-header-text {
+  margin: 6px 0 0;
+  color: #e5e7eb;
+}
+
+.viewer-sport-section {
+  margin-bottom: 20px;
+}
+
+.viewer-stage-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 14px;
+  margin: 14px 0;
+  background: #ffffff;
+}
+
+.viewer-stage-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.viewer-stage-header h3 {
+  margin: 0 0 8px;
+}
+
+.viewer-stage-meta {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.viewer-table-title {
+  margin: 18px 0 8px;
+  padding: 8px 10px;
+  background: #f3f4f6;
+  border-left: 4px solid #2563eb;
+}
+
+.badge-info {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.empty-message {
+  color: #6b7280;
+}
+
+#viewer-status {
+  color: #374151;
+}
+
+#viewer-error {
+  margin-top: 8px;
+}
+
+@media (max-width: 700px) {
+  .viewer-stage-card {
+    padding: 10px;
+  }
+
+  .viewer-stage-header {
+    display: block;
+  }
+
+  .viewer-stage-meta {
+    margin-top: 6px;
+  }
+}
