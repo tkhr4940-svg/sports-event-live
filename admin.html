@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <title>管理画面</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="./style.css?v=50">
+  <link rel="stylesheet" href="./style.css?v=80">
 </head>
 <body>
   <header class="site-header">
@@ -32,7 +32,7 @@
         <button class="menu-button" type="button" data-view="create-stage">2. 表の作成</button>
         <button class="menu-button" type="button" data-view="league-edit">3. リーグ戦編集</button>
         <button class="menu-button" type="button" data-view="tournament-edit">4. トーナメント編集</button>
-        <button class="menu-button" type="button" disabled>5. 順位入力型編集</button>
+        <button class="menu-button" type="button" data-view="ranking-edit">5. 順位入力型編集</button>
         <button class="menu-button" type="button" disabled>6. 公開／非公開管理</button>
       </nav>
 
@@ -268,11 +268,77 @@
     トーナメント表を選択してください。
   </div>
 </section>
+      <section id="view-ranking-edit" class="admin-view card" hidden>
+  <h2>順位入力型編集</h2>
+
+  <label class="form-field">
+    <span>編集する順位入力型の表</span>
+    <select id="ranking-stage-select">
+      <option value="">順位入力型の表を読み込み中...</option>
+    </select>
+  </label>
+
+  <div id="ranking-info" class="info-box"></div>
+
+  <p id="ranking-message" class="message"></p>
+
+  <h3>順位入力</h3>
+
+  <p class="help-text">
+    同順位にしたい場合は、同じ数字を入力してください。
+    表示は「1位、1位、3位」方式になります。
+    棄権・失格は通常順位の下に表示されます。
+  </p>
+
+  <div class="stage-actions">
+    <button id="ranking-save-all-btn" type="button">
+      順位を保存
+    </button>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>チーム</th>
+          <th>順位入力</th>
+          <th>状態</th>
+          <th>表示結果</th>
+        </tr>
+      </thead>
+      <tbody id="ranking-entries-tbody">
+        <tr>
+          <td colspan="4">順位入力型の表を選択してください。</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>表示プレビュー</h3>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>表示</th>
+          <th>チーム</th>
+          <th>状態</th>
+        </tr>
+      </thead>
+      <tbody id="ranking-preview-tbody">
+        <tr>
+          <td colspan="3">順位入力型の表を選択してください。</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
     </section>
   </main>
 
   <script type="module" src="./js/admin.js?v=50"></script>
   <script type="module" src="./js/admin-league.js?v=60"></script>
   <script type="module" src="./js/admin-tournament.js?v=70"></script>
+  <script type="module" src="./js/admin-ranking.js?v=80"></script>
 </body>
 </html>
