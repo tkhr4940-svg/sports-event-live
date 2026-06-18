@@ -277,3 +277,23 @@ pre {
     width: 64px;
   }
 }
+.stage-name-edit {
+  width: 100%;
+  min-width: 180px;
+  box-sizing: border-box;
+}
+
+.danger-button {
+  background: #fee2e2;
+  border: 1px solid #fecaca;
+  color: #991b1b;
+  border-radius: 6px;
+}
+
+.danger-button:hover {
+  background: #fecaca;
+}
+
+#publish-stages-tbody td {
+  vertical-align: middle;
+}
