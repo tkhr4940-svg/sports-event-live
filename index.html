@@ -3,9 +3,29 @@
 <head>
   <meta charset="UTF-8">
   <title>大会速報</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="./style.css?v=100">
 </head>
 <body>
-  <h1>大会速報</h1>
-  <p>閲覧者用ページです。</p>
+  <header class="site-header">
+    <h1>大会速報</h1>
+    <p class="viewer-header-text">公開中の競技結果を表示しています。</p>
+  </header>
+
+  <main class="container">
+    <section class="card">
+      <h2>公開中の表</h2>
+      <p id="viewer-status">読み込み中...</p>
+      <p id="viewer-error" class="message error" hidden></p>
+    </section>
+
+    <div id="viewer-app">
+      <section class="card">
+        読み込み中...
+      </section>
+    </div>
+  </main>
+
+  <script type="module" src="./js/viewer.js?v=100"></script>
 </body>
 </html>
