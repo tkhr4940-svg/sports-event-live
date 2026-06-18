@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <title>管理画面</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="./style.css?v=80">
+  <link rel="stylesheet" href="./style.css?v=90">
 </head>
 <body>
   <header class="site-header">
@@ -33,7 +33,7 @@
         <button class="menu-button" type="button" data-view="league-edit">3. リーグ戦編集</button>
         <button class="menu-button" type="button" data-view="tournament-edit">4. トーナメント編集</button>
         <button class="menu-button" type="button" data-view="ranking-edit">5. 順位入力型編集</button>
-        <button class="menu-button" type="button" disabled>6. 公開／非公開管理</button>
+        <button class="menu-button" type="button" data-view="publish-management">6. 公開／非公開管理</button>
       </nav>
 
       <section id="view-teams" class="admin-view card">
@@ -333,6 +333,68 @@
     </table>
   </div>
 </section>
+      <section id="view-publish-management" class="admin-view card" hidden>
+  <h2>公開／非公開管理</h2>
+
+  <p class="help-text">
+    公開にした表だけが閲覧者用ページに表示されます。
+    非表示は削除扱いですが、データは残ります。復元すると非公開状態に戻ります。
+  </p>
+
+  <div class="form-grid">
+    <label class="form-field">
+      <span>競技で絞り込み</span>
+      <select id="publish-sport-filter">
+        <option value="">すべての競技</option>
+      </select>
+    </label>
+
+    <label class="form-field">
+      <span>種類で絞り込み</span>
+      <select id="publish-type-filter">
+        <option value="">すべての種類</option>
+        <option value="league">リーグ戦</option>
+        <option value="tournament">トーナメント</option>
+        <option value="ranking">順位入力型</option>
+      </select>
+    </label>
+
+    <label class="form-field">
+      <span>状態で絞り込み</span>
+      <select id="publish-state-filter">
+        <option value="">すべて</option>
+        <option value="public">公開中</option>
+        <option value="private">非公開</option>
+        <option value="hidden">非表示</option>
+      </select>
+    </label>
+  </div>
+
+  <p id="publish-message" class="message"></p>
+  <p id="publish-count"></p>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>順番</th>
+          <th>表の名前</th>
+          <th>競技</th>
+          <th>種類</th>
+          <th>参加数</th>
+          <th>公開状態</th>
+          <th>状態</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody id="publish-stages-tbody">
+        <tr>
+          <td colspan="8">読み込み中...</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
     </section>
   </main>
 
@@ -340,5 +402,6 @@
   <script type="module" src="./js/admin-league.js?v=60"></script>
   <script type="module" src="./js/admin-tournament.js?v=70"></script>
   <script type="module" src="./js/admin-ranking.js?v=80"></script>
+  <script type="module" src="./js/admin-publish.js?v=90"></script>
 </body>
 </html>
