@@ -368,3 +368,94 @@ pre {
     margin-top: 6px;
   }
 }
+
+/* ==============================
+   大会速報 表示用：表をコンパクトに
+   ============================== */
+
+#viewer-app .card {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* リーグ戦表・対戦表など table 全体 */
+#viewer-app table {
+  width: auto !important;
+  max-width: 100%;
+  margin: 0 auto;
+  border-collapse: collapse;
+  table-layout: auto;
+  font-size: 13px !important;
+  line-height: 1.25;
+  font-variant-numeric: tabular-nums;
+}
+
+/* セルの余白を少し小さくする */
+#viewer-app th,
+#viewer-app td {
+  padding: 4px 6px !important;
+  min-width: 2.2em;
+  height: auto !important;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+/* チーム名など長い文字は折り返し可能にする */
+#viewer-app th:first-child,
+#viewer-app td:first-child {
+  max-width: 10em;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+/* 表タイトルなども少し控えめに */
+#viewer-app caption,
+#viewer-app .table-title,
+#viewer-app h3 {
+  font-size: 0.95rem;
+  margin: 0.5rem 0;
+}
+
+/* div形式の対戦カードがある場合も少し小さくする */
+#viewer-app .match,
+#viewer-app .match-card,
+#viewer-app .match-row,
+#viewer-app .game,
+#viewer-app .game-card {
+  font-size: 13px;
+  padding: 6px 8px;
+  gap: 6px;
+}
+
+#viewer-app .bracket,
+#viewer-app .tournament,
+#viewer-app .match-list {
+  gap: 8px;
+}
+
+/* スマホ表示ではさらにコンパクトに */
+@media (max-width: 640px) {
+  #viewer-app table {
+    font-size: 11px !important;
+  }
+
+  #viewer-app th,
+  #viewer-app td {
+    padding: 3px 4px !important;
+    min-width: 2em;
+  }
+
+  #viewer-app .card {
+    padding: 12px;
+  }
+
+  #viewer-app .match,
+  #viewer-app .match-card,
+  #viewer-app .match-row,
+  #viewer-app .game,
+  #viewer-app .game-card {
+    font-size: 11px;
+    padding: 5px 6px;
+    gap: 4px;
+  }
+}
