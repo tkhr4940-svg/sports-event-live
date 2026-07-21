@@ -800,10 +800,15 @@ function computeLeagueStandings(stage, matches) {
 // ===== トーナメント表示 =====
 
 function renderTournamentStage(stage) {
-  const wrapper = el("div");
+  const wrapper = el("div", {
+    className: "tournament-horizontal-wrap"
+  });
 
   const data = stageData.get(stage.id) || { matches: [] };
-  const matches = data.matches || [];
+
+  const matches = (data.matches || [])
+    .filter((match) => match.type === "tournament")
+    .sort(sortTournamentMatches);
 
   if (matches.length === 0) {
     wrapper.appendChild(
@@ -815,80 +820,315 @@ function renderTournamentStage(stage) {
     return wrapper;
   }
 
-  const mainMatches = matches.filter((match) => match.bracketType === "main");
-  const thirdPlaceMatches = matches.filter(
-    (match) => match.bracketType === "third_place"
+  const labelMap = buildTournamentMatchLabelMap(matches);
+  const sourceMap = buildTournamentSourceMap(matches);
+
+  const mainMatches = matches.filter((match) => !isThirdPlaceMatch(match));
+  const thirdPlaceMatches = matches.filter((match) => isThirdPlaceMatch(match));
+
+  const rounds = groupTournamentRounds(mainMatches);
+
+  wrapper.appendChild(
+    el("h4", {
+      className: "viewer-table-title",
+      text: "トーナメント表"
+    })
   );
 
-  const roundNumbers = Array.from(
-    new Set(mainMatches.map((match) => Number(match.round)))
-  ).sort((a, b) => a - b);
-
-  roundNumbers.forEach((round) => {
-    const roundMatches = mainMatches.filter(
-      (match) => Number(match.round) === round
-    );
-
-    const title = roundMatches[0]?.roundName || `${round}回戦`;
-
+  if (rounds.length === 0) {
     wrapper.appendChild(
-      el("h4", {
-        className: "viewer-table-title",
-        text: title
+      el("p", {
+        className: "empty-message",
+        text: "表示できるトーナメント試合がありません。"
       })
     );
+  } else {
+    const scroll = el("div", {
+      className: "tournament-bracket-scroll"
+    });
 
-    wrapper.appendChild(renderTournamentMatchTable(roundMatches));
-  });
+    const bracket = el("div", {
+      className: "tournament-bracket"
+    });
+
+    rounds.forEach((round) => {
+      const roundEl = el("section", {
+        className: "bracket-round"
+      });
+
+      roundEl.appendChild(
+        el("div", {
+          className: "bracket-round-title",
+          text: round.roundName
+        })
+      );
+
+      const matchList = el("div", {
+        className: "bracket-round-matches"
+      });
+
+      round.matches.forEach((match) => {
+        matchList.appendChild(
+          createTournamentMatchCard(match, labelMap, sourceMap)
+        );
+      });
+
+      roundEl.appendChild(matchList);
+      bracket.appendChild(roundEl);
+    });
+
+    scroll.appendChild(bracket);
+    wrapper.appendChild(scroll);
+  }
 
   if (thirdPlaceMatches.length > 0) {
-    wrapper.appendChild(
-      el("h4", {
-        className: "viewer-table-title",
+    const thirdWrap = el("section", {
+      className: "tournament-third-place"
+    });
+
+    thirdWrap.appendChild(
+      el("div", {
+        className: "tournament-third-place-title",
         text: "3位決定戦"
       })
     );
 
-    wrapper.appendChild(renderTournamentMatchTable(thirdPlaceMatches));
+    thirdPlaceMatches.forEach((match) => {
+      thirdWrap.appendChild(
+        createTournamentMatchCard(match, labelMap, sourceMap)
+      );
+    });
+
+    wrapper.appendChild(thirdWrap);
   }
 
   return wrapper;
 }
 
-function renderTournamentMatchTable(matches) {
-  return makeTable(
-    ["試合", "A", "スコア", "B", "状態", "勝者"],
-    matches.map((match) => {
-      const label =
-        match.bracketType === "third_place"
-          ? "3位決定戦"
-          : `第${match.matchIndex}試合`;
+function sortTournamentMatches(a, b) {
+  const orderA = Number(a.order);
+  const orderB = Number(b.order);
 
-      const teamA = formatTournamentTeam(match.teamAId, match.winnerId);
-      const teamB = formatTournamentTeam(match.teamBId, match.winnerId);
+  if (Number.isFinite(orderA) && Number.isFinite(orderB) && orderA !== orderB) {
+    return orderA - orderB;
+  }
 
-      return [
-        label,
-        teamA,
-        `${formatScore(match.scoreA)} - ${formatScore(match.scoreB)}`,
-        teamB,
-        getTournamentStatusLabel(match),
-        match.winnerId ? getTeamName(match.winnerId) : "-"
-      ];
-    })
+  const roundA = Number(a.round || 0);
+  const roundB = Number(b.round || 0);
+
+  if (roundA !== roundB) return roundA - roundB;
+
+  const indexA = Number(a.matchIndex || 0);
+  const indexB = Number(b.matchIndex || 0);
+
+  if (indexA !== indexB) return indexA - indexB;
+
+  return String(a.id || "").localeCompare(String(b.id || ""));
+}
+
+function isThirdPlaceMatch(match) {
+  return (
+    match.bracketType === "third_place" ||
+    match.matchType === "third_place" ||
+    match.id === "third_place" ||
+    match.roundName === "3位決定戦"
   );
 }
 
-function formatTournamentTeam(teamId, winnerId) {
-  if (!teamId) return "未定";
+function groupTournamentRounds(matches) {
+  const roundMap = new Map();
 
-  const name = getTeamName(teamId);
+  matches.forEach((match) => {
+    const round = Number(match.round || 0);
+    const roundName = match.roundName || `${round}回戦`;
+    const key = `${round}_${roundName}`;
 
-  if (winnerId === teamId) {
-    return `★ ${name}`;
+    if (!roundMap.has(key)) {
+      roundMap.set(key, {
+        round,
+        roundName,
+        matches: []
+      });
+    }
+
+    roundMap.get(key).matches.push(match);
+  });
+
+  return Array.from(roundMap.values())
+    .map((round) => ({
+      ...round,
+      matches: round.matches.sort(sortTournamentMatches)
+    }))
+    .sort((a, b) => a.round - b.round);
+}
+
+function buildTournamentMatchLabelMap(matches) {
+  const map = new Map();
+  const counters = new Map();
+
+  const sortedMatches = [...matches].sort(sortTournamentMatches);
+
+  sortedMatches.forEach((match) => {
+    if (isThirdPlaceMatch(match)) {
+      map.set(match.id, "3位決定戦");
+      return;
+    }
+
+    const roundName = match.roundName || `${match.round || ""}回戦`;
+
+    let matchIndex = Number(match.matchIndex);
+
+    if (!Number.isInteger(matchIndex) || matchIndex <= 0) {
+      const count = (counters.get(roundName) || 0) + 1;
+      counters.set(roundName, count);
+      matchIndex = count;
+    }
+
+    map.set(match.id, `${roundName} 第${matchIndex}試合`);
+  });
+
+  return map;
+}
+
+/*
+  sourceA/sourceB がある新しい試合データにも対応しつつ、
+  古いデータの nextMatchId / loserNextMatchId からも
+  「前の試合の勝者・敗者」を推測できるようにする
+*/
+function buildTournamentSourceMap(matches) {
+  const sourceMap = new Map();
+
+  function setSource(targetMatchId, slot, source) {
+    if (!targetMatchId) return;
+
+    const side = slot === "B" ? "B" : "A";
+
+    if (!sourceMap.has(targetMatchId)) {
+      sourceMap.set(targetMatchId, {});
+    }
+
+    sourceMap.get(targetMatchId)[side] = source;
   }
 
-  return name;
+  matches.forEach((match) => {
+    if (match.nextMatchId) {
+      setSource(match.nextMatchId, match.nextSlot, {
+        type: "winner",
+        matchId: match.id
+      });
+    }
+
+    if (match.loserNextMatchId) {
+      setSource(match.loserNextMatchId, match.loserNextSlot, {
+        type: "loser",
+        matchId: match.id
+      });
+    }
+  });
+
+  return sourceMap;
+}
+
+function createTournamentMatchCard(match, labelMap, sourceMap) {
+  const card = el("article", {
+    className: "bracket-match"
+  });
+
+  const title = el("div", {
+    className: "bracket-match-title"
+  });
+
+  const titleText = el("span", {
+    text: isThirdPlaceMatch(match)
+      ? "3位決定戦"
+      : `第${match.matchIndex || ""}試合`
+  });
+
+  const statusBadge = el("span", {
+    className: `bracket-status ${getTournamentStatusClass(match.status)}`,
+    text: getTournamentStatusLabel(match)
+  });
+
+  title.appendChild(titleText);
+  title.appendChild(statusBadge);
+
+  card.appendChild(title);
+
+  card.appendChild(
+    createTournamentTeamLine(match, "A", labelMap, sourceMap)
+  );
+
+  card.appendChild(
+    createTournamentTeamLine(match, "B", labelMap, sourceMap)
+  );
+
+  return card;
+}
+
+function createTournamentTeamLine(match, side, labelMap, sourceMap) {
+  const row = el("div", {
+    className: "bracket-team"
+  });
+
+  const teamId = side === "A" ? match.teamAId : match.teamBId;
+  const score = side === "A" ? match.scoreA : match.scoreB;
+
+  const directSource = side === "A" ? match.sourceA : match.sourceB;
+  const inferredSource = sourceMap.get(match.id)?.[side] || null;
+  const source = directSource || inferredSource;
+
+  const name = el("span", {
+    className: "bracket-team-name"
+  });
+
+  if (teamId) {
+    name.textContent = getTeamName(teamId);
+  } else if (source) {
+    name.textContent = getTournamentSourceLabel(source, labelMap);
+    name.classList.add("pending-source");
+  } else {
+    name.textContent = "未定";
+    name.classList.add("pending-source");
+  }
+
+  const scoreEl = el("span", {
+    className: "bracket-score",
+    text: formatTournamentCardScore(score)
+  });
+
+  const mark = el("span");
+
+  if (teamId && match.winnerId === teamId) {
+    row.classList.add("winner");
+    mark.className = "bracket-winner-mark";
+    mark.textContent = "勝";
+  }
+
+  row.appendChild(name);
+  row.appendChild(scoreEl);
+  row.appendChild(mark);
+
+  return row;
+}
+
+function getTournamentSourceLabel(source, labelMap) {
+  if (!source) return "未定";
+
+  const matchLabel = source.matchId
+    ? labelMap.get(source.matchId) || "前の試合"
+    : "前の試合";
+
+  const typeLabel = source.type === "loser" ? "敗者" : "勝者";
+
+  return `${matchLabel}の${typeLabel}`;
+}
+
+function formatTournamentCardScore(value) {
+  if (value === null || value === undefined || value === "") {
+    return "";
+  }
+
+  return String(value);
 }
 
 function getTournamentStatusLabel(match) {
@@ -899,8 +1139,21 @@ function getTournamentStatusLabel(match) {
     return "不戦勝";
   }
 
-  return STATUS_LABELS[match.status] || match.status || "";
+  if (match.status === "playing") {
+    return "試合中";
+  }
+
+  return STATUS_LABELS[match.status] || match.status || "未開始";
 }
+
+function getTournamentStatusClass(status) {
+  if (status === "finished") return "status-finished";
+  if (status === "in_progress") return "status-in-progress";
+  if (status === "playing") return "status-in-progress";
+  if (status === "postponed") return "status-postponed";
+  return "status-not-started";
+}
+
 
 // ===== 順位入力型表示 =====
 
