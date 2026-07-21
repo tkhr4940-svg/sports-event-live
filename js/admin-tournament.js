@@ -475,18 +475,27 @@ function renderTournamentInfo() {
     return;
   }
 
-  const bracketSize = getBracketSize(selectedStage);
-  const teamIds = Array.isArray(selectedStage.teamIds)
-    ? selectedStage.teamIds
-    : [];
+  const plan = getTournamentPlan(selectedStage);
 
-  const thirdPlace = selectedStage.settings?.thirdPlace === true;
+  if (!plan.valid) {
+    tournamentInfoEl.textContent =
+      "トーナメントは2〜16チームで作成してください。";
+    return;
+  }
+
+  const teamIds = getParticipantTeamIds(selectedStage);
+
+  const thirdPlace =
+    selectedStage.settings?.thirdPlace === true && plan.teamCount >= 4;
 
   const lines = [
     `表名：${selectedStage.name || ""}`,
     `競技：${getSportName(selectedStage.sportId)}`,
     `参加チーム数：${teamIds.length}`,
-    `トーナメント枠：${bracketSize}枠`,
+    `配置枠：${plan.teamCount}枠`,
+    `本戦：${plan.baseSize}チーム`,
+    `1回戦：${plan.preliminaryMatchCount > 0 ? `${plan.preliminaryMatchCount}試合` : "なし"}`,
+    `本戦から出場：${plan.byeTeamCount}チーム`,
     `3位決定戦：${thirdPlace ? "あり" : "なし"}`,
     `勝者決定：管理者が手動で選択`
   ];
@@ -497,6 +506,7 @@ function renderTournamentInfo() {
     tournamentInfoEl.appendChild(p);
   });
 }
+
 
 // ===== 組み合わせ枠 =====
 
