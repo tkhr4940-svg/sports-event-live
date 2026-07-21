@@ -520,18 +520,23 @@ function renderSeedSlots() {
     return;
   }
 
-  const bracketSize = getBracketSize(selectedStage);
-  const seedSlots = getSeedSlots(selectedStage);
-  const participantIds = Array.isArray(selectedStage.teamIds)
-    ? selectedStage.teamIds
-    : [];
+  const plan = getTournamentPlan(selectedStage);
 
-  for (let i = 0; i < bracketSize; i++) {
+  if (!plan.valid) {
+    tournamentSeedSlotsEl.textContent =
+      "トーナメントは2〜16チームで作成してください。";
+    return;
+  }
+
+  const seedSlots = getSeedSlots(selectedStage);
+  const participantIds = getParticipantTeamIds(selectedStage);
+
+  for (let i = 0; i < seedSlots.length; i++) {
     const wrapper = document.createElement("label");
     wrapper.className = "seed-slot";
 
     const title = document.createElement("span");
-    title.textContent = `枠 ${i + 1}`;
+    title.textContent = getSeedSlotLabel(i, plan);
 
     const select = document.createElement("select");
     select.dataset.seedSlot = String(i);
@@ -556,6 +561,7 @@ function renderSeedSlots() {
     tournamentSeedSlotsEl.appendChild(wrapper);
   }
 }
+
 
 function getSeedSlotValuesFromScreen() {
   return Array.from(
@@ -636,11 +642,30 @@ async function saveSeedSlotsOnly() {
     return;
   }
 
+  const plan = getTournamentPlan(selectedStage);
+
+  if (!plan.valid) {
+    showTournamentMessage("トーナメントは2〜16チームで作成してください。", true);
+    return;
+  }
+
   try {
     const settings = {
       ...(selectedStage.settings || {}),
-      bracketSize: getBracketSize(selectedStage),
-      thirdPlace: selectedStage.settings?.thirdPlace === true,
+
+      // 旧仕様の bracketSize には実チーム数を入れる
+      bracketSize: plan.teamCount,
+
+      // 新仕様用
+      actualTeamCount: plan.teamCount,
+      mainBracketSize: plan.baseSize,
+      preliminaryMatchCount: plan.preliminaryMatchCount,
+      byeTeamCount: plan.byeTeamCount,
+      totalRounds: plan.totalRounds,
+
+      thirdPlace:
+        selectedStage.settings?.thirdPlace === true && plan.teamCount >= 4,
+
       seedingMode: "manual",
       winnerSelection: "manual",
       seedSlots
@@ -660,6 +685,7 @@ async function saveSeedSlotsOnly() {
     );
   }
 }
+
 
 // ===== 試合作成／再作成 =====
 
