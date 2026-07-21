@@ -116,52 +116,120 @@ function readScore(value) {
   };
 }
 
-function getBracketSize(stage) {
-  const fromSettings = Number(stage?.settings?.bracketSize);
+function getParticipantTeamIds(stage) {
+  return Array.isArray(stage?.teamIds)
+    ? stage.teamIds.filter(Boolean)
+    : [];
+}
 
-  if ([2, 4, 8, 16].includes(fromSettings)) {
-    return fromSettings;
+function isPowerOfTwo(n) {
+  return n > 0 && (n & (n - 1)) === 0;
+}
+
+function lowerPowerOfTwo(n) {
+  return 2 ** Math.floor(Math.log2(n));
+}
+
+function getTournamentPlanFromTeamCount(teamCount) {
+  if (teamCount < 2 || teamCount > 16) {
+    return {
+      valid: false,
+      teamCount,
+      baseSize: 0,
+      preliminaryMatchCount: 0,
+      byeTeamCount: 0,
+      mainRoundCount: 0,
+      totalRounds: 0,
+      hasPreliminary: false,
+      hasThirdPlace: false
+    };
   }
 
-  const teamCount = Array.isArray(stage?.teamIds) ? stage.teamIds.length : 0;
+  const baseSize = isPowerOfTwo(teamCount)
+    ? teamCount
+    : lowerPowerOfTwo(teamCount);
 
-  if (teamCount <= 2) return 2;
-  if (teamCount <= 4) return 4;
-  if (teamCount <= 8) return 8;
-  return 16;
+  const preliminaryMatchCount = isPowerOfTwo(teamCount)
+    ? 0
+    : teamCount - baseSize;
+
+  const byeTeamCount = isPowerOfTwo(teamCount)
+    ? 0
+    : baseSize - preliminaryMatchCount;
+
+  const mainRoundCount = Math.log2(baseSize);
+  const totalRounds =
+    mainRoundCount + (preliminaryMatchCount > 0 ? 1 : 0);
+
+  return {
+    valid: true,
+    teamCount,
+    baseSize,
+    preliminaryMatchCount,
+    byeTeamCount,
+    mainRoundCount,
+    totalRounds,
+    hasPreliminary: preliminaryMatchCount > 0,
+    hasThirdPlace: teamCount >= 4
+  };
 }
 
-function getRounds(bracketSize) {
-  return Math.log2(bracketSize);
+function getTournamentPlan(stage) {
+  const teamCount = getParticipantTeamIds(stage).length;
+  return getTournamentPlanFromTeamCount(teamCount);
 }
 
-function getRoundName(round, rounds) {
-  if (round === rounds) return "決勝";
-  if (round === rounds - 1) return "準決勝";
-  if (round === rounds - 2) return "準々決勝";
-  return `${round}回戦`;
+// 互換用。今後は「16枠に丸める」のではなく、実チーム数を返す。
+function getBracketSize(stage) {
+  return getTournamentPlan(stage).teamCount;
+}
+
+function getMainRoundNameBySlotCount(slotCount) {
+  if (slotCount === 16) return "1回戦";
+  if (slotCount === 8) return "準々決勝";
+  if (slotCount === 4) return "準決勝";
+  if (slotCount === 2) return "決勝";
+  return `${slotCount}チーム戦`;
 }
 
 function getSeedSlots(stage) {
-  const bracketSize = getBracketSize(stage);
+  const participantIds = getParticipantTeamIds(stage);
+  const slotCount = participantIds.length;
+
   const currentSlots = Array.isArray(stage?.settings?.seedSlots)
     ? stage.settings.seedSlots
     : [];
 
-  const slots = Array.from({ length: bracketSize }, (_, index) => {
+  const slots = Array.from({ length: slotCount }, (_, index) => {
     return currentSlots[index] || null;
   });
 
-  if (currentSlots.length === 0 && Array.isArray(stage?.teamIds)) {
-    stage.teamIds.forEach((teamId, index) => {
-      if (index < slots.length) {
-        slots[index] = teamId;
-      }
+  if (currentSlots.length === 0) {
+    participantIds.forEach((teamId, index) => {
+      slots[index] = teamId;
     });
   }
 
   return slots;
 }
+
+function getSeedSlotLabel(index, plan) {
+  const slotNumber = index + 1;
+
+  if (!plan.hasPreliminary) {
+    return `枠 ${slotNumber}`;
+  }
+
+  if (index < plan.byeTeamCount) {
+    return `枠 ${slotNumber}（本戦から）`;
+  }
+
+  const preliminaryIndex = index - plan.byeTeamCount;
+  const matchNumber = Math.floor(preliminaryIndex / 2) + 1;
+
+  return `枠 ${slotNumber}（1回戦 第${matchNumber}試合）`;
+}
+
 
 function teamNameList(teamIds) {
   return teamIds.map((teamId) => getTeamName(teamId)).join("、");
