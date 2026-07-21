@@ -620,3 +620,115 @@ pre {
     padding: 8px;
   }
 }
+/* =========================
+   横型トーナメント表 小さめ表示
+========================= */
+
+.tournament-horizontal-wrap {
+  margin-top: 8px;
+}
+
+.tournament-bracket-scroll {
+  padding: 4px 2px 10px;
+}
+
+.tournament-bracket {
+  gap: 10px;
+}
+
+.bracket-round {
+  flex: 0 0 170px;
+  width: 170px;
+}
+
+.bracket-round-title {
+  padding: 5px 7px;
+  font-size: 0.82rem;
+  border-radius: 6px;
+  margin-bottom: 7px;
+}
+
+.bracket-round-matches {
+  gap: 8px;
+}
+
+.bracket-match {
+  border-radius: 7px;
+  box-shadow: none;
+}
+
+.bracket-match-title {
+  padding: 5px 7px;
+  font-size: 0.72rem;
+}
+
+.bracket-team {
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 4px;
+  padding: 6px 7px;
+  min-height: 30px;
+  font-size: 0.78rem;
+}
+
+.bracket-team-name {
+  min-width: 0;
+}
+
+.bracket-team-name.pending-source {
+  font-size: 0.7rem;
+}
+
+.bracket-score {
+  min-width: 18px;
+  font-size: 0.78rem;
+}
+
+.bracket-winner-mark {
+  font-size: 0.62rem;
+  padding: 1px 4px;
+}
+
+.bracket-status {
+  font-size: 0.62rem;
+  padding: 1px 5px;
+}
+
+.tournament-third-place {
+  margin-top: 12px;
+  max-width: 360px;
+}
+
+.tournament-third-place-title {
+  font-size: 0.82rem;
+  padding: 5px 7px;
+  border-radius: 6px;
+}
+
+@media (max-width: 700px) {
+  .tournament-bracket {
+    gap: 8px;
+  }
+
+  .bracket-round {
+    flex-basis: 155px;
+    width: 155px;
+  }
+
+  .bracket-round-title {
+    font-size: 0.78rem;
+  }
+
+  .bracket-match-title {
+    font-size: 0.68rem;
+  }
+
+  .bracket-team {
+    padding: 5px 6px;
+    min-height: 28px;
+    font-size: 0.74rem;
+  }
+
+  .bracket-team-name.pending-source {
+    font-size: 0.66rem;
+  }
+}
