@@ -712,6 +712,13 @@ async function buildTournamentMatches() {
     return;
   }
 
+  const plan = getTournamentPlan(selectedStage);
+
+  if (!plan.valid) {
+    showTournamentMessage("トーナメントは2〜16チームで作成してください。", true);
+    return;
+  }
+
   const ok = confirm(
     "トーナメント試合を作成／再作成します。\n既存の試合結果がある場合は上書きされます。\nよろしいですか？"
   );
@@ -730,11 +737,22 @@ async function buildTournamentMatches() {
       batch.delete(docSnap.ref);
     });
 
-    const bracketSize = getBracketSize(selectedStage);
     const settings = {
       ...(selectedStage.settings || {}),
-      bracketSize,
-      thirdPlace: selectedStage.settings?.thirdPlace === true,
+
+      // 旧仕様の bracketSize には実チーム数を入れる
+      bracketSize: plan.teamCount,
+
+      // 新仕様用
+      actualTeamCount: plan.teamCount,
+      mainBracketSize: plan.baseSize,
+      preliminaryMatchCount: plan.preliminaryMatchCount,
+      byeTeamCount: plan.byeTeamCount,
+      totalRounds: plan.totalRounds,
+
+      thirdPlace:
+        selectedStage.settings?.thirdPlace === true && plan.teamCount >= 4,
+
       seedingMode: "manual",
       winnerSelection: "manual",
       seedSlots
@@ -765,74 +783,108 @@ async function buildTournamentMatches() {
   }
 }
 
+
 function generateTournamentMatchData(stage, seedSlots) {
-  const bracketSize = getBracketSize(stage);
-  const rounds = getRounds(bracketSize);
-  const thirdPlace = stage.settings?.thirdPlace === true;
+  const placedTeamIds = seedSlots.filter(Boolean);
+  const plan = getTournamentPlanFromTeamCount(placedTeamIds.length);
+
+  if (!plan.valid) {
+    throw new Error("トーナメントは2〜16チームで作成してください。");
+  }
+
+  const thirdPlace =
+    stage.settings?.thirdPlace === true && plan.teamCount >= 4;
 
   const matches = [];
   const matchesById = new Map();
 
-  for (let round = 1; round <= rounds; round++) {
-    const matchCount = bracketSize / Math.pow(2, round);
-
-    for (let matchIndex = 1; matchIndex <= matchCount; matchIndex++) {
-      const id = `main_r${round}_m${matchIndex}`;
-
-      let teamAId = null;
-      let teamBId = null;
-
-      if (round === 1) {
-        const seedIndex = (matchIndex - 1) * 2;
-        teamAId = seedSlots[seedIndex] || null;
-        teamBId = seedSlots[seedIndex + 1] || null;
-      }
-
-      const matchData = {
-        id,
-        type: "tournament",
-        bracketType: "main",
-        round,
-        roundName: getRoundName(round, rounds),
-        matchIndex,
-        order: round * 100 + matchIndex,
-        teamAId,
-        teamBId,
-        scoreA: null,
-        scoreB: null,
-        status: "not_started",
-        winnerId: null,
-        loserId: null,
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp()
-      };
-
-      if (round < rounds) {
-        matchData.nextMatchId = `main_r${round + 1}_m${Math.ceil(matchIndex / 2)}`;
-        matchData.nextSlot = matchIndex % 2 === 1 ? "A" : "B";
-      }
-
-      if (thirdPlace && round === rounds - 1) {
-        matchData.loserNextMatchId = "third_place";
-        matchData.loserNextSlot = matchIndex === 1 ? "A" : "B";
-      }
-
-      matches.push(matchData);
-      matchesById.set(id, matchData);
-    }
+  function teamSlot(teamId) {
+    return {
+      kind: "team",
+      teamId
+    };
   }
 
-  if (thirdPlace) {
-    const thirdPlaceMatch = {
-      id: "third_place",
+  function winnerSlot(matchId) {
+    return {
+      kind: "winner",
+      matchId
+    };
+  }
+
+  function loserSlot(matchId) {
+    return {
+      kind: "loser",
+      matchId
+    };
+  }
+
+  function slotToTeamId(slot) {
+    if (!slot) return null;
+    return slot.kind === "team" ? slot.teamId : null;
+  }
+
+  function slotToSource(slot) {
+    if (!slot) return null;
+
+    if (slot.kind === "team") {
+      return null;
+    }
+
+    return {
+      type: slot.kind,
+      matchId: slot.matchId
+    };
+  }
+
+  function connectWinnerSourceToMatch(slot, targetMatch, side) {
+    if (!slot || slot.kind !== "winner") return;
+
+    const sourceMatch = matchesById.get(slot.matchId);
+    if (!sourceMatch) return;
+
+    sourceMatch.nextMatchId = targetMatch.id;
+    sourceMatch.nextSlot = side;
+  }
+
+  function connectLoserSourceToMatch(slot, targetMatch, side) {
+    if (!slot || slot.kind !== "loser") return;
+
+    const sourceMatch = matchesById.get(slot.matchId);
+    if (!sourceMatch) return;
+
+    sourceMatch.loserNextMatchId = targetMatch.id;
+    sourceMatch.loserNextSlot = side;
+  }
+
+  function addMatch({
+    id,
+    bracketType = "main",
+    round,
+    roundName,
+    matchIndex,
+    slotA,
+    slotB,
+    order
+  }) {
+    const matchId = id || `main_r${round}_m${matchIndex}`;
+
+    const matchData = {
+      id: matchId,
       type: "tournament",
-      bracketType: "third_place",
-      round: rounds,
-      roundName: "3位決定戦",
-      matchIndex: 1,
-      order: rounds * 100 + 50,
-      teamAId: null,
-      teamBId: null,
+      bracketType,
+      round,
+      roundName,
+      matchIndex,
+      order: order ?? round * 100 + matchIndex,
+
+      teamAId: slotToTeamId(slotA),
+      teamBId: slotToTeamId(slotB),
+
+      // 後で横型表示を作るときに使える情報
+      sourceA: slotToSource(slotA),
+      sourceB: slotToSource(slotB),
+
       scoreA: null,
       scoreB: null,
       status: "not_started",
@@ -842,27 +894,120 @@ function generateTournamentMatchData(stage, seedSlots) {
       updatedAt: serverTimestamp()
     };
 
-    matches.push(thirdPlaceMatch);
-    matchesById.set("third_place", thirdPlaceMatch);
+    matches.push(matchData);
+    matchesById.set(matchId, matchData);
+
+    connectWinnerSourceToMatch(slotA, matchData, "A");
+    connectWinnerSourceToMatch(slotB, matchData, "B");
+
+    connectLoserSourceToMatch(slotA, matchData, "A");
+    connectLoserSourceToMatch(slotB, matchData, "B");
+
+    return matchData;
   }
 
-  // 1回戦で片方が空き枠の場合は、不戦勝として次の試合へ進める
-  matches.forEach((match) => {
-    if (match.bracketType !== "main") return;
-    if (match.round !== 1) return;
+  let currentSlots = [];
+  let round = 1;
+  let semiFinalMatchIds = [];
 
-    const hasA = Boolean(match.teamAId);
-    const hasB = Boolean(match.teamBId);
+  // 例：10チームの場合
+  // byeTeamCount = 6
+  // preliminaryMatchCount = 2
+  //
+  // 枠1〜6   → 本戦から
+  // 枠7〜10  → 1回戦
+  if (plan.hasPreliminary) {
+    const byeTeams = placedTeamIds.slice(0, plan.byeTeamCount);
+    const preliminaryTeams = placedTeamIds.slice(plan.byeTeamCount);
 
-    if (hasA && !hasB) {
-      applyByeWin(match, match.teamAId, matchesById);
-    } else if (!hasA && hasB) {
-      applyByeWin(match, match.teamBId, matchesById);
+    const byeSlots = byeTeams.map(teamSlot);
+    const preliminaryWinnerSlots = [];
+
+    for (let i = 0; i < plan.preliminaryMatchCount; i++) {
+      const teamAId = preliminaryTeams[i * 2];
+      const teamBId = preliminaryTeams[i * 2 + 1];
+
+      const match = addMatch({
+        round,
+        roundName: "1回戦",
+        matchIndex: i + 1,
+        slotA: teamSlot(teamAId),
+        slotB: teamSlot(teamBId)
+      });
+
+      preliminaryWinnerSlots.push(winnerSlot(match.id));
     }
-  });
+
+    // 本戦の枠に、不戦勝チームと1回戦勝者を配置
+    currentSlots = [];
+
+    const maxLength = Math.max(byeSlots.length, preliminaryWinnerSlots.length);
+
+    for (let i = 0; i < maxLength; i++) {
+      if (byeSlots[i]) {
+        currentSlots.push(byeSlots[i]);
+      }
+
+      if (preliminaryWinnerSlots[i]) {
+        currentSlots.push(preliminaryWinnerSlots[i]);
+      }
+    }
+
+    round++;
+  } else {
+    currentSlots = placedTeamIds.map(teamSlot);
+  }
+
+  // 本戦
+  while (currentSlots.length > 1) {
+    const slotCount = currentSlots.length;
+    const roundName = getMainRoundNameBySlotCount(slotCount);
+
+    const nextSlots = [];
+    const createdMatchIds = [];
+
+    for (let i = 0; i < currentSlots.length; i += 2) {
+      const matchIndex = i / 2 + 1;
+
+      const match = addMatch({
+        round,
+        roundName,
+        matchIndex,
+        slotA: currentSlots[i],
+        slotB: currentSlots[i + 1]
+      });
+
+      createdMatchIds.push(match.id);
+      nextSlots.push(winnerSlot(match.id));
+    }
+
+    if (slotCount === 4) {
+      semiFinalMatchIds = createdMatchIds;
+    }
+
+    currentSlots = nextSlots;
+    round++;
+  }
+
+  // 3位決定戦
+  if (thirdPlace && semiFinalMatchIds.length === 2) {
+    const finalRound = round - 1;
+
+    addMatch({
+      id: "third_place",
+      bracketType: "third_place",
+      round: finalRound,
+      roundName: "3位決定戦",
+      matchIndex: 1,
+      order: finalRound * 100 + 50,
+      slotA: loserSlot(semiFinalMatchIds[0]),
+      slotB: loserSlot(semiFinalMatchIds[1])
+    });
+  }
 
   return matches;
 }
+
 
 function applyByeWin(match, winnerId, matchesById) {
   match.status = "finished";
