@@ -1002,7 +1002,7 @@ function generateTournamentMatchData(stage, seedSlots) {
       order: finalRound * 100 + 50,
       slotA: loserSlot(semiFinalMatchIds[0]),
       slotB: loserSlot(semiFinalMatchIds[1])
-    });
+    })hidden;
   }
 
   return matches;
