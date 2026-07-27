@@ -732,3 +732,13 @@ pre {
     font-size: 0.66rem;
   }
 }
+
+.tournament-option {
+  display: block;
+  margin: 12px 0;
+  font-weight: 600;
+}
+
+.tournament-option input {
+  margin-right: 6px;
+}
