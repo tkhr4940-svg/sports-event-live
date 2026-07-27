@@ -28,6 +28,10 @@ const tournamentSeedSlotsEl = document.getElementById("tournament-seed-slots");
 const saveSeedsBtn = document.getElementById("tournament-save-seeds-btn");
 const buildMatchesBtn = document.getElementById("tournament-build-matches-btn");
 const tournamentMatchesEl = document.getElementById("tournament-matches");
+const thirdPlaceCheckbox = document.getElementById("tournament-third-place-checkbox");
+
+let lastSyncedThirdPlaceStageId = "";
+
 
 let isAdmin = false;
 
@@ -178,6 +182,58 @@ function getTournamentPlan(stage) {
   const teamCount = getParticipantTeamIds(stage).length;
   return getTournamentPlanFromTeamCount(teamCount);
 }
+function syncThirdPlaceOptionFromStage() {
+  if (!thirdPlaceCheckbox) return;
+
+  if (!selectedStage) {
+    thirdPlaceCheckbox.checked = false;
+    thirdPlaceCheckbox.disabled = true;
+    lastSyncedThirdPlaceStageId = "";
+    return;
+  }
+
+  const plan = getTournamentPlan(selectedStage);
+  const canCreateThirdPlace = plan.valid && plan.teamCount >= 4;
+
+  thirdPlaceCheckbox.disabled = !canCreateThirdPlace;
+  thirdPlaceCheckbox.title = canCreateThirdPlace
+    ? ""
+    : "3位決定戦は4チーム以上の場合のみ作成できます。";
+
+  if (!canCreateThirdPlace) {
+    thirdPlaceCheckbox.checked = false;
+    lastSyncedThirdPlaceStageId = "";
+    return;
+  }
+
+  // トーナメント表を切り替えた時だけ保存済み設定を反映する
+  // 同じ表でユーザーがチェックを変更した直後に、再描画で戻らないようにするため
+  if (lastSyncedThirdPlaceStageId !== selectedStage.id) {
+    thirdPlaceCheckbox.checked =
+      selectedStage.settings?.thirdPlace === true;
+
+    lastSyncedThirdPlaceStageId = selectedStage.id;
+  }
+}
+
+function getThirdPlaceEnabled(stage = selectedStage, plan = getTournamentPlan(stage)) {
+  if (!stage || !plan.valid || plan.teamCount < 4) {
+    return false;
+  }
+
+  if (thirdPlaceCheckbox) {
+    return thirdPlaceCheckbox.checked === true;
+  }
+
+  return stage.settings?.thirdPlace === true;
+}
+
+if (thirdPlaceCheckbox) {
+  thirdPlaceCheckbox.addEventListener("change", () => {
+    renderTournamentInfo();
+  });
+}
+
 
 // 互換用。今後は「16枠に丸める」のではなく、実チーム数を返す。
 function getBracketSize(stage) {
@@ -305,11 +361,13 @@ function stopAllTournamentListeners() {
 }
 
 function clearTournamentScreen() {
+  syncThirdPlaceOptionFromStage();
   renderTournamentStageSelect();
   renderTournamentInfo();
   renderSeedSlots();
   renderTournamentMatches();
 }
+
 
 // ===== データ取得 =====
 
@@ -417,13 +475,13 @@ function renderTournamentStageSelect() {
     tournamentStageSelect.appendChild(option);
 
     selectedStageId = "";
-    selectedStage = null;
-    stopMatchesListener();
-    renderTournamentInfo();
-    renderSeedSlots();
-    renderTournamentMatches();
-    return;
-  }
+selectedStage = null;
+stopMatchesListener();
+syncThirdPlaceOptionFromStage();
+renderTournamentInfo();
+renderSeedSlots();
+renderTournamentMatches();
+return;
 
   tournamentStages.forEach((stage) => {
     const option = document.createElement("option");
@@ -448,13 +506,13 @@ function renderTournamentStageSelect() {
 }
 
 function selectTournamentStage(stageId) {
-  selectedStageId = stageId || "";
-
   selectedStage =
-    tournamentStages.find((stage) => stage.id === selectedStageId) || null;
+  tournamentStages.find((stage) => stage.id === selectedStageId) || null;
 
-  renderTournamentInfo();
-  renderSeedSlots();
+syncThirdPlaceOptionFromStage();
+renderTournamentInfo();
+renderSeedSlots();
+
 
   if (!selectedStageId) {
     stopMatchesListener();
@@ -485,8 +543,8 @@ function renderTournamentInfo() {
 
   const teamIds = getParticipantTeamIds(selectedStage);
 
-  const thirdPlace =
-    selectedStage.settings?.thirdPlace === true && plan.teamCount >= 4;
+  const thirdPlace = getThirdPlaceEnabled(selectedStage, plan);
+
 
   const lines = [
     `表名：${selectedStage.name || ""}`,
