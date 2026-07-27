@@ -706,28 +706,29 @@ async function saveSeedSlotsOnly() {
     showTournamentMessage("トーナメントは2〜16チームで作成してください。", true);
     return;
   }
-
+const thirdPlace = getThirdPlaceEnabled(selectedStage, plan);
+  
   try {
     const settings = {
-      ...(selectedStage.settings || {}),
+  ...(selectedStage.settings || {}),
 
-      // 旧仕様の bracketSize には実チーム数を入れる
-      bracketSize: plan.teamCount,
+  // 旧仕様の bracketSize には実チーム数を入れる
+  bracketSize: plan.teamCount,
 
-      // 新仕様用
-      actualTeamCount: plan.teamCount,
-      mainBracketSize: plan.baseSize,
-      preliminaryMatchCount: plan.preliminaryMatchCount,
-      byeTeamCount: plan.byeTeamCount,
-      totalRounds: plan.totalRounds,
+  // 新仕様用
+  actualTeamCount: plan.teamCount,
+  mainBracketSize: plan.baseSize,
+  preliminaryMatchCount: plan.preliminaryMatchCount,
+  byeTeamCount: plan.byeTeamCount,
+  totalRounds: plan.totalRounds,
 
-      thirdPlace:
-        selectedStage.settings?.thirdPlace === true && plan.teamCount >= 4,
+  thirdPlace,
 
-      seedingMode: "manual",
-      winnerSelection: "manual",
-      seedSlots
-    };
+  seedingMode: "manual",
+  winnerSelection: "manual",
+  seedSlots
+};
+
 
     await updateDoc(doc(db, "stages", selectedStageId), {
       settings,
