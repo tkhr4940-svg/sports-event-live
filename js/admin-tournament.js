@@ -475,13 +475,14 @@ function renderTournamentStageSelect() {
     tournamentStageSelect.appendChild(option);
 
     selectedStageId = "";
-selectedStage = null;
-stopMatchesListener();
-syncThirdPlaceOptionFromStage();
-renderTournamentInfo();
-renderSeedSlots();
-renderTournamentMatches();
-return;
+    selectedStage = null;
+    stopMatchesListener();
+    syncThirdPlaceOptionFromStage();
+    renderTournamentInfo();
+    renderSeedSlots();
+    renderTournamentMatches();
+    return;
+  }
 
   tournamentStages.forEach((stage) => {
     const option = document.createElement("option");
@@ -505,16 +506,18 @@ return;
   selectTournamentStage(selectedStageId);
 }
 
+
 function selectTournamentStage(stageId) {
+  selectedStageId = stageId || "";
+
   selectedStage =
-  tournamentStages.find((stage) => stage.id === selectedStageId) || null;
+    tournamentStages.find((stage) => stage.id === selectedStageId) || null;
 
-syncThirdPlaceOptionFromStage();
-renderTournamentInfo();
-renderSeedSlots();
+  syncThirdPlaceOptionFromStage();
+  renderTournamentInfo();
+  renderSeedSlots();
 
-
-  if (!selectedStageId) {
+  if (!selectedStageId || !selectedStage) {
     stopMatchesListener();
     renderTournamentMatches();
     return;
@@ -778,8 +781,14 @@ async function buildTournamentMatches() {
     return;
   }
 
+  // チェックボックスのON/OFFを取得
+  const thirdPlace = getThirdPlaceEnabled(selectedStage, plan);
+
   const ok = confirm(
-    "トーナメント試合を作成／再作成します。\n既存の試合結果がある場合は上書きされます。\nよろしいですか？"
+    `トーナメント試合を作成／再作成します。\n` +
+    `3位決定戦：${thirdPlace ? "作成する" : "作成しない"}\n` +
+    `既存の試合結果がある場合は上書きされます。\n` +
+    `よろしいですか？`
   );
 
   if (!ok) return;
@@ -809,8 +818,8 @@ async function buildTournamentMatches() {
       byeTeamCount: plan.byeTeamCount,
       totalRounds: plan.totalRounds,
 
-      thirdPlace:
-        selectedStage.settings?.thirdPlace === true && plan.teamCount >= 4,
+      // チェックボックスのON/OFFを保存
+      thirdPlace,
 
       seedingMode: "manual",
       winnerSelection: "manual",
@@ -822,7 +831,15 @@ async function buildTournamentMatches() {
       updatedAt: serverTimestamp()
     });
 
-    const matchDataList = generateTournamentMatchData(selectedStage, seedSlots);
+    // ここが重要：
+    // selectedStage の古い settings ではなく、今作った settings を使って試合生成する
+    const matchDataList = generateTournamentMatchData(
+      {
+        ...selectedStage,
+        settings
+      },
+      seedSlots
+    );
 
     matchDataList.forEach((matchData) => {
       const { id, ...data } = matchData;
@@ -841,6 +858,7 @@ async function buildTournamentMatches() {
     );
   }
 }
+
 
 
 function generateTournamentMatchData(stage, seedSlots) {
