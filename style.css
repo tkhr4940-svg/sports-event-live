@@ -785,3 +785,44 @@ pre {
   box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
   vertical-align: 0.08em;
 }
+
+/* =========================
+   競技ごとの表示 / 非表示ボタン
+========================= */
+
+#viewer-app .viewer-sport-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+
+  margin: -4px 0 12px;
+  padding: 5px 12px;
+
+  font-size: 0.85rem;
+  font-weight: 700;
+
+  border: 1px solid #facc15;
+  border-radius: 999px;
+  background: #fffbeb;
+  color: #92400e;
+
+  cursor: pointer;
+}
+
+#viewer-app .viewer-sport-toggle:hover {
+  background: #fef3c7;
+}
+
+#viewer-app .viewer-sport-toggle::before {
+  content: "−";
+  font-weight: bold;
+}
+
+#viewer-app .viewer-sport-section.is-collapsed .viewer-sport-toggle::before {
+  content: "+";
+}
+
+/* 非表示中は、競技タイトルとボタン以外を隠す */
+#viewer-app .viewer-sport-section.is-collapsed > :not(.viewer-sport-title):not(.viewer-sport-toggle) {
+  display: none !important;
+}
