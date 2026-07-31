@@ -742,3 +742,46 @@ pre {
 .tournament-option input {
   margin-right: 6px;
 }
+
+/* =========================
+   競技タイトル：マーカー風表示
+========================= */
+
+#viewer-app .viewer-sport-title,
+#viewer-app .viewer-sport-section > h2,
+#viewer-app .viewer-sport-section > h3:not(.viewer-table-title) {
+  --sport-marker: rgba(253, 224, 71, 0.78);
+
+  width: fit-content;
+  max-width: 100%;
+  margin: 22px 0 14px;
+  padding: 0 0.22em 0.08em;
+
+  font-size: clamp(1.35rem, 3vw, 1.85rem) !important;
+  font-weight: 800;
+  line-height: 1.35;
+  letter-spacing: 0.04em;
+  color: #111827;
+
+  background: linear-gradient(
+    transparent 58%,
+    var(--sport-marker) 58%
+  );
+
+  border-radius: 4px;
+}
+
+/* タイトル左の丸いアクセント */
+#viewer-app .viewer-sport-title::before,
+#viewer-app .viewer-sport-section > h2::before,
+#viewer-app .viewer-sport-section > h3:not(.viewer-table-title)::before {
+  content: "";
+  display: inline-block;
+  width: 0.55em;
+  height: 0.55em;
+  margin-right: 0.35em;
+  border-radius: 999px;
+  background: #2563eb;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+  vertical-align: 0.08em;
+}
