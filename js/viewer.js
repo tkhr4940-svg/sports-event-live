@@ -1177,15 +1177,17 @@ function renderRankingStage(stage) {
   }
 
   wrapper.appendChild(
-    makeTable(
-      ["表示", "チーム", "状態"],
-      rows.map((row) => [
-        row.displayText,
-        getTeamName(row.teamId),
-        row.statusText
-      ])
-    )
-  );
+  makeTable(
+    ["表示", "チーム", "記録", "状態"],
+    rows.map((row) => [
+      row.displayText,
+      getTeamName(row.teamId),
+      row.recordText || "",
+      row.statusText
+    ])
+  )
+);
+
 
   return wrapper;
 }
@@ -1202,15 +1204,17 @@ function buildRankingDisplayRows(stage, entries) {
   });
 
   const formRows = teamIds.map((teamId, index) => {
-    const entry = entryByTeamId.get(teamId);
+  const entry = entryByTeamId.get(teamId);
 
-    return {
-      teamId,
-      order: entry?.order || index + 1,
-      rank: entry?.rank ?? null,
-      status: entry?.status || "normal"
-    };
-  });
+  return {
+    teamId,
+    order: entry?.order || index + 1,
+    rank: entry?.rank ?? null,
+    status: entry?.status || "normal",
+    recordText: entry?.recordText ?? ""
+  };
+});
+
 
   const normalRanked = formRows
     .filter((row) => row.status === "normal" && row.rank !== null)
