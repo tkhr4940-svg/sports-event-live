@@ -209,10 +209,16 @@ pre {
     width: 64px;
   }
 
+  #ranking-entries-tbody .record-input {
+    width: 120px;
+    min-width: 110px;
+  }
+
   .small-select {
     min-width: 90px;
   }
 }
+
 .seed-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -825,4 +831,24 @@ pre {
 /* 非表示中は、競技タイトルとボタン以外を隠す */
 #viewer-app .viewer-sport-section.is-collapsed > :not(.viewer-sport-title):not(.viewer-sport-toggle) {
   display: none !important;
+}
+
+/* =========================
+   順位入力型：記録欄
+========================= */
+
+.record-input {
+  width: 160px;
+  min-width: 130px;
+  max-width: 100%;
+  padding: 6px;
+  font-size: 15px;
+  box-sizing: border-box;
+}
+
+@media (max-width: 700px) {
+  #ranking-entries-tbody .record-input {
+    width: 120px;
+    min-width: 110px;
+  }
 }
