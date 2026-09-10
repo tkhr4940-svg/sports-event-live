@@ -24,6 +24,8 @@ const STATUS_ORDER = {
   withdrawn: 2,
   disqualified: 3
 };
+const MAX_RECORD_TEXT_LENGTH = 50;
+
 
 const rankingStageSelect = document.getElementById("ranking-stage-select");
 const rankingInfoEl = document.getElementById("ranking-info");
@@ -121,6 +123,22 @@ function parseRankInput(value) {
     value: n
   };
 }
+function parseRecordTextInput(value) {
+  const text = String(value ?? "").trim();
+
+  if (text.length > MAX_RECORD_TEXT_LENGTH) {
+    return {
+      ok: false,
+      value: text
+    };
+  }
+
+  return {
+    ok: true,
+    value: text
+  };
+}
+
 
 // ===== ログイン確認 =====
 
@@ -463,6 +481,7 @@ function getEditableEntries() {
       order: existing?.order || index + 1,
       rank: existing?.rank ?? null,
       status: existing?.status || "normal"
+      recordText: existing?.recordText ?? ""
     };
   });
 }
@@ -476,7 +495,7 @@ function renderRankingEntries() {
     const tr = document.createElement("tr");
     const td = document.createElement("td");
 
-    td.colSpan = 4;
+    td.colSpan = 5;
     td.textContent = "順位入力型の表を選択してください。";
 
     tr.appendChild(td);
@@ -490,7 +509,7 @@ function renderRankingEntries() {
     const tr = document.createElement("tr");
     const td = document.createElement("td");
 
-    td.colSpan = 4;
+    td.colSpan = 5;
     td.textContent = "参加チームがありません。";
 
     tr.appendChild(td);
@@ -515,6 +534,20 @@ function renderRankingEntries() {
     rankInput.className = "rank-input";
     rankInput.dataset.rankingRank = "input";
     rankInput.value = entry.rank ?? "";
+
+    const recordTd = document.createElement("td");
+
+    const recordInput = document.createElement("input");
+    recordInput.type = "text";
+    recordInput.className = "record-input";
+    recordInput.dataset.rankingRecord = "input";
+    recordInput.maxLength = MAX_RECORD_TEXT_LENGTH;
+    recordInput.placeholder = "例：1分23秒45 / 10回";
+    recordInput.value = entry.recordText ?? "";
+
+    recordInput.addEventListener("input", renderRankingPreviewFromForm);
+
+    recordTd.appendChild(recordInput);
 
     const statusTd = document.createElement("td");
 
@@ -558,12 +591,14 @@ function renderRankingEntries() {
 
     tr.appendChild(teamTd);
     tr.appendChild(rankTd);
+    tr.appendChild(recordTd);
     tr.appendChild(statusTd);
     tr.appendChild(previewTd);
 
     rankingEntriesTbody.appendChild(tr);
   });
 }
+
 
 // ===== プレビュー計算 =====
 
@@ -580,10 +615,12 @@ function readRowsFromForm() {
     const order = Number(row.dataset.order) || 999999;
 
     const rankInput = row.querySelector('[data-ranking-rank="input"]');
+    const recordInput = row.querySelector('[data-ranking-record="input"]');
     const statusSelect = row.querySelector('[data-ranking-status="input"]');
 
     const status = statusSelect?.value || "normal";
     const rankResult = parseRankInput(rankInput?.value || "");
+    const recordResult = parseRecordTextInput(recordInput?.value || "");
 
     return {
       teamId,
@@ -591,13 +628,18 @@ function readRowsFromForm() {
       order,
       status,
       rank: status === "normal" ? rankResult.value : null,
-      rankInvalid: status === "normal" ? !rankResult.ok : false
+      rankInvalid: status === "normal" ? !rankResult.ok : false,
+      recordText: recordResult.value,
+      recordInvalid: !recordResult.ok
     };
   });
 }
 
+
 function buildPreviewRows(formRows) {
-  const invalidRows = formRows.filter((row) => row.rankInvalid);
+  const invalidRows = formRows.filter(
+  (row) => row.rankInvalid || row.recordInvalid
+);
 
   if (invalidRows.length > 0) {
     return {
@@ -697,7 +739,7 @@ function renderRankingPreviewFromForm() {
     const tr = document.createElement("tr");
     const td = document.createElement("td");
 
-    td.colSpan = 3;
+    td.colSpan = 4;
     td.textContent = "順位入力型の表を選択してください。";
 
     tr.appendChild(td);
@@ -709,7 +751,7 @@ function renderRankingPreviewFromForm() {
     const tr = document.createElement("tr");
     const td = document.createElement("td");
 
-    td.colSpan = 3;
+    td.colSpan = 4;
     td.textContent = "参加チームがありません。";
 
     tr.appendChild(td);
@@ -717,7 +759,9 @@ function renderRankingPreviewFromForm() {
     return;
   }
 
-  const invalidRows = formRows.filter((row) => row.rankInvalid);
+  const invalidRows = formRows.filter(
+    (row) => row.rankInvalid || row.recordInvalid
+  );
 
   if (invalidRows.length > 0) {
     invalidRows.forEach((row) => {
@@ -734,8 +778,9 @@ function renderRankingPreviewFromForm() {
     const tr = document.createElement("tr");
     const td = document.createElement("td");
 
-    td.colSpan = 3;
-    td.textContent = "順位は1以上の整数で入力してください。";
+    td.colSpan = 4;
+    td.textContent =
+      `順位は1以上の整数、記録は${MAX_RECORD_TEXT_LENGTH}文字以内で入力してください。`;
     td.className = "error";
 
     tr.appendChild(td);
@@ -753,7 +798,9 @@ function renderRankingPreviewFromForm() {
     );
 
     if (cell) {
-      cell.textContent = row.displayText;
+      cell.textContent = row.recordText
+        ? `${row.displayText}（${row.recordText}）`
+        : row.displayText;
     }
 
     const tr = document.createElement("tr");
@@ -768,16 +815,21 @@ function renderRankingPreviewFromForm() {
     const teamTd = document.createElement("td");
     teamTd.textContent = getTeamName(row.teamId);
 
+    const recordTd = document.createElement("td");
+    recordTd.textContent = row.recordText || "";
+
     const statusTd = document.createElement("td");
     statusTd.textContent = row.statusText;
 
     tr.appendChild(displayTd);
     tr.appendChild(teamTd);
+    tr.appendChild(recordTd);
     tr.appendChild(statusTd);
 
     rankingPreviewTbody.appendChild(tr);
   });
 }
+
 
 // ===== 保存 =====
 
@@ -803,10 +855,15 @@ async function saveAllRankingEntries() {
     return;
   }
 
-  const invalidRows = formRows.filter((row) => row.rankInvalid);
+  const invalidRows = formRows.filter(
+    (row) => row.rankInvalid || row.recordInvalid
+  );
 
   if (invalidRows.length > 0) {
-    showRankingMessage("順位は1以上の整数で入力してください。", true);
+    showRankingMessage(
+      `順位は1以上の整数、記録は${MAX_RECORD_TEXT_LENGTH}文字以内で入力してください。`,
+      true
+    );
     return;
   }
 
@@ -829,6 +886,7 @@ async function saveAllRankingEntries() {
         rank: row.status === "normal" ? row.rank : null,
         status: row.status,
         order: row.order,
+        recordText: row.recordText,
         updatedAt: serverTimestamp()
       };
 
@@ -854,6 +912,7 @@ async function saveAllRankingEntries() {
     );
   }
 }
+
 
 // 初期表示
 clearRankingScreen();
