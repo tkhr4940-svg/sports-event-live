@@ -290,10 +290,11 @@
   <h3>順位入力</h3>
 
   <p class="help-text">
-    同順位にしたい場合は、同じ数字を入力してください。
-    表示は「1位、1位、3位」方式になります。
-    棄権・失格は通常順位の下に表示されます。
-  </p>
+  同順位にしたい場合は、同じ数字を入力してください。
+  表示は「1位、1位、3位」方式になります。
+  タイム・回数・距離などは「記録」欄に自由に入力できます。
+  棄権・失格は通常順位の下に表示されます。
+</p>
 
   <div class="stage-actions">
     <button id="ranking-save-all-btn" type="button">
@@ -304,18 +305,20 @@
   <div class="table-wrap">
     <table>
       <thead>
-        <tr>
-          <th>チーム</th>
-          <th>順位入力</th>
-          <th>状態</th>
-          <th>表示結果</th>
-        </tr>
-      </thead>
-      <tbody id="ranking-entries-tbody">
-        <tr>
-          <td colspan="4">順位入力型の表を選択してください。</td>
-        </tr>
-      </tbody>
+  <tr>
+    <th>チーム</th>
+    <th>順位入力</th>
+    <th>記録</th>
+    <th>状態</th>
+    <th>表示結果</th>
+  </tr>
+</thead>
+<tbody id="ranking-entries-tbody">
+  <tr>
+    <td colspan="5">順位入力型の表を選択してください。</td>
+  </tr>
+</tbody>
+
     </table>
   </div>
 
@@ -324,17 +327,18 @@
   <div class="table-wrap">
     <table>
       <thead>
-        <tr>
-          <th>表示</th>
-          <th>チーム</th>
-          <th>状態</th>
-        </tr>
-      </thead>
-      <tbody id="ranking-preview-tbody">
-        <tr>
-          <td colspan="3">順位入力型の表を選択してください。</td>
-        </tr>
-      </tbody>
+  <tr>
+    <th>表示</th>
+    <th>チーム</th>
+    <th>記録</th>
+    <th>状態</th>
+  </tr>
+</thead>
+<tbody id="ranking-preview-tbody">
+  <tr>
+    <td colspan="4">順位入力型の表を選択してください。</td>
+  </tr>
+</tbody>
     </table>
   </div>
 </section>
