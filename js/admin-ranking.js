@@ -475,14 +475,15 @@ function getEditableEntries() {
     const existing = entryByTeamId.get(teamId);
 
     return {
-      id: existing?.id || "",
-      exists: Boolean(existing),
-      teamId,
-      order: existing?.order || index + 1,
-      rank: existing?.rank ?? null,
-      status: existing?.status || "normal"
-      recordText: existing?.recordText ?? ""
-    };
+  id: existing?.id || "",
+  exists: Boolean(existing),
+  teamId,
+  order: existing?.order || index + 1,
+  rank: existing?.rank ?? null,
+  status: existing?.status || "normal",
+  recordText: existing?.recordText ?? ""
+};
+
   });
 }
 
